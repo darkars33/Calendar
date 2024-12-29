@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 const AddEventModal = ({ isOpen, onClose, selectedSlot, onAddEvent }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [title, setTitle] = useState(selectedSlot ? `Event at ${selectedSlot.time}` : '');
+  const [description, setDescription] = useState(selectedSlot ? `Event at ${selectedSlot.description}` : '');
+  const [startTime, setStartTime] = useState(selectedSlot ? selectedSlot.time : '');
+  const [endTime, setEndTime] = useState(selectedSlot ? selectedSlot.time : '');
 
   useEffect(() => {
     if (selectedSlot) {

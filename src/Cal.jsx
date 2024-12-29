@@ -3,8 +3,21 @@ import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import AddEventModal from './AddEventModal';
 
 const WeeklyPlanner = () => {
+
+          const [workDays, setWorkDays] = useState({
+                    0: false,  // Sunday
+                    1: true,   // Monday
+                    2: true,   // Tuesday
+                    3: true,   // Wednesday
+                    4: true,   // Thursday
+                    5: true,   // Friday
+                    6: false   // Saturday
+          });
+
           const [currentDate, setCurrentDate] = useState(new Date());
-          const [view, setView] = useState('week'); // 'week', 'month', or '3days'
+          const [view, setView] = useState('week');
+
+          const [menu, setMenu] = useState(false);
 
           // AddEventModal
           const [events, setEvents] = useState([]);
@@ -139,78 +152,127 @@ const WeeklyPlanner = () => {
                     ? getMonthDates(currentDate)
                     : getDates(getStartDate(currentDate, view), view);
 
-          const renderTimeGrid = () => (
-                    <div className="flex w-full mt-24 h-[10%] overflow-hidden bg-black">
-                              {/* Time Column */}
-                              <div className="w-24 flex-shrink-0 pr-4">
-                                        <div className="h-12"></div>
-                                        {hours.map((hour) => (
-                                                  <div
-                                                            key={hour}
-                                                            className="h-16 flex items-start justify-end pr-4 text-sm text-gray-600"
-                                                            style={{ borderTop: '1px solid #e5e7eb' }}
-                                                  >
-                                                            {hour}
-                                                  </div>
-                                        ))}
-                              </div>
+          const toggleWorkDay = (dayIndex) => {
+                    setWorkDays(prev => ({
+                              ...prev,
+                              [dayIndex]: !prev[dayIndex]
+                    }));
+          };
 
-                              {/* Days Grid */}
-                              <div className={`flex-grow grid ${view === '1day' ? 'grid-cols-1' :
-                                                  view === '3days' ? 'grid-cols-3' :
-                                                            view === '5days' ? 'grid-cols-5' :
-                                                                      'grid-cols-7'
-                                        } divide-x divide-gray-200`}>
-                                        {days.map((day) => (
-                                                  <div key={`${day.fullDate}`} className="text-center">
-                                                            <div className="h-12 flex flex-col justify-end pb-2">
-                                                                      <div className="text-sm text-gray-600">{day.name}</div>
-                                                                      <div className={`text-xl font-normal inline-flex justify-center ${day.isToday ? 'text-white bg-blue-600 rounded-full w-8 h-8 items-center mx-auto' : ''
-                                                                                }`}>
-                                                                                {day.date}
-                                                                      </div>
-                                                            </div>
-                                                            {hours.map((hour, idx) => {
-                                                                      const slotEvents = getEventsForTimeSlot(day.fullDate, hour);
-                                                                      return (
-                                                                                <div
-                                                                                          key={`${day.fullDate}-${hour}`}
-                                                                                          className="h-16 border-t border-gray-200 cursor-pointer relative"
-                                                                                          onClick={() => handleTimeSlotClick(day.fullDate, hour)}
-                                                                                >
-                                                                                          {slotEvents.map(event => (
-                                                                                                    <div
-                                                                                                              key={event.id}
-                                                                                                              className={`absolute left-1 right-1 p-1 rounded text-white text-sm ${event.color} hover:opacity-90`}
-                                                                                                              style={{
-                                                                                                                        top: '4px',
-                                                                                                                        minHeight: '24px',
-                                                                                                                        zIndex: 10
-                                                                                                              }}
-                                                                                                    >
-                                                                                                              <div className="font-semibold truncate">{event.title}</div>
-                                                                                                              <div className="text-xs">
-                                                                                                                        {event.start.toLocaleTimeString('en-US', {
-                                                                                                                                  hour: 'numeric',
-                                                                                                                                  minute: '2-digit',
-                                                                                                                                  hour12: true
-                                                                                                                        })}
-                                                                                                              </div>
-                                                                                                    </div>
-                                                                                          ))}
-                                                                                </div>
-                                                                      );
-                                                            })}
-                                                  </div>
-                                        ))}
+          const WorkdaySettings = ({ workDays, onToggle }) => {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    return (
+                              <div className="flex items-center gap-2 mb-4">
+                                        <span className="text-sm font-medium text-gray-700">Work days:</span>
+                                        <div className="flex gap-1">
+                                                  {days.map((day, index) => (
+                                                            <button
+                                                                      key={day}
+                                                                      onClick={() => onToggle(index)}
+                                                                      className={`px-3 py-1 text-sm rounded-md ${workDays[index]
+                                                                                ? 'bg-blue-600 text-white'
+                                                                                : 'bg-gray-100 text-gray-600'
+                                                                                }`}
+                                                            >
+                                                                      {day}
+                                                            </button>
+                                                  ))}
+                                        </div>
                               </div>
-                    </div>
-          );
+                    );
+          };
+
+
+          const renderTimeGrid = () => {
+                    const isWorkDay = (date) => {
+                      return workDays[date.getDay()];
+                    };
+                  
+                    return (
+                      <div className="flex w-full overflow-hidden">
+                        {/* Time Column */}
+                        <div className="w-24 flex-shrink-0 pr-4">
+                          <div className="h-12"></div>
+                          {hours.map((hour) => (
+                            <div
+                              key={hour}
+                              className="h-16 flex items-start justify-end pr-4 text-sm text-gray-600"
+                              style={{ borderTop: '1px solid #e5e7eb' }}
+                            >
+                              {hour}
+                            </div>
+                          ))}
+                        </div>
+                  
+                        {/* Days Grid */}
+                        <div className={`flex-grow grid ${
+                          view === '1day' ? 'grid-cols-1' :
+                          view === '3days' ? 'grid-cols-3' :
+                          view === '5days' ? 'grid-cols-5' :
+                          'grid-cols-7'
+                        } divide-x divide-gray-200`}>
+                          {days.map((day) => (
+                            <div
+                              key={`${day.fullDate}`}
+                              className={`text-center ${!isWorkDay(day.fullDate) ? 'bg-gray-50' : ''}`}
+                            >
+                              <div className="h-12 flex flex-col justify-end pb-2">
+                                <div className={`text-sm ${
+                                  !isWorkDay(day.fullDate) ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
+                                  {day.name}
+                                </div>
+                                <div className={`text-xl font-normal inline-flex justify-center ${
+                                  day.isToday ? 'text-white bg-blue-600 rounded-full w-8 h-8 items-center mx-auto' :
+                                  !isWorkDay(day.fullDate) ? 'text-gray-400' : ''
+                                }`}>
+                                  {day.date}
+                                </div>
+                              </div>
+                              {hours.map((hour, idx) => {
+                                const slotEvents = getEventsForTimeSlot(day.fullDate, hour);
+                                return (
+                                  <div
+                                    key={`${day.fullDate}-${hour}`}
+                                    className={`h-16 border-t border-gray-200 cursor-pointer relative ${
+                                      !isWorkDay(day.fullDate) ? 'bg-gray-50' : ''
+                                    }`}
+                                    onClick={() => handleTimeSlotClick(day.fullDate, hour)}
+                                  >
+                                    {slotEvents.map(event => (
+                                      <div
+                                        key={event.id}
+                                        className={`absolute left-1 right-1 p-1 rounded text-white text-sm ${event.color}`}
+                                        style={{
+                                          top: '4px',
+                                          minHeight: '24px'
+                                        }}
+                                      >
+                                        <div className="font-semibold truncate">{event.title}</div>
+                                        <div className="text-xs">
+                                          {event.start.toLocaleTimeString('en-US', {
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                          })}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  };
 
           return (
                     <div className="max-w-full mx-auto p-4">
                               {/* Navigation */}
-                              <div className="flex justify-between items-center mb-4 fixed w-full px-10">
+                              <div className="flex justify-between items-center mb-4  md:px-10">
                                         <div className="flex items-center gap-4">
                                                   <button
                                                             onClick={() => navigate(-1)}
@@ -219,7 +281,7 @@ const WeeklyPlanner = () => {
                                                             <ChevronLeft className="w-5 h-5" />
                                                   </button>
                                                   <h2 className="text-lg flex items-center gap-4">
-                                                            <span className="font-semibold">
+                                                            <span className="font-semibold text-sm md:text-lg">
                                                                       {currentDate.toLocaleString('en-US', {
                                                                                 month: 'long',
                                                                                 year: 'numeric',
@@ -236,7 +298,7 @@ const WeeklyPlanner = () => {
                                                             <ChevronRight className="w-5 h-5" />
                                                   </button>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="md:flex items-center gap-2 hidden">
                                                   <button
                                                             onClick={goToToday}
                                                             className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -279,11 +341,65 @@ const WeeklyPlanner = () => {
                                                             Month
                                                   </button>
                                         </div>
+
+                                        <div className="md:hidden relative z-10">
+                                                  <button
+                                                            className="p-2 px-4 border rounded-xl"
+                                                            onClick={() => setMenu(!menu)}
+                                                  >
+                                                            {menu ? 'Close' : 'Menu'}
+                                                  </button>
+
+                                                  <div className='absolute top-12 right-0 bg-white shadow-md rounded-lg p-4 w-40 flex-col items-center gap-2' style={{ display: menu ? 'flex' : 'none' }}>
+                                                            <button
+                                                                      onClick={goToToday}
+                                                                      className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                                            >
+                                                                      Today
+                                                            </button>
+                                                            <button
+                                                                      onClick={() => changeView('1day')}
+                                                                      className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                                            >
+                                                                      1 Day
+                                                            </button>
+                                                            <button
+                                                                      onClick={() => changeView('3days')}
+                                                                      className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-black
+              ${view === '3days' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+                                                            >
+                                                                      3 Days
+                                                            </button>
+                                                            <button
+                                                                      onClick={() => changeView('5days')}
+                                                                      className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-black
+              ${view === '5days' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+                                                            >
+                                                                      5 Days
+                                                            </button>
+                                                            <button
+                                                                      onClick={() => changeView('week')}
+                                                                      className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-black
+              ${view === 'week' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+                                                            >
+                                                                      Week
+                                                            </button>
+                                                            <button
+                                                                      onClick={() => changeView('month')}
+                                                                      className={`px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2
+              ${view === 'month' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+                                                            >
+                                                                      <Calendar className="w-4 h-4" />
+                                                                      Month
+                                                            </button>
+                                                  </div>
+
+                                        </div>
                               </div>
 
                               {/* Calendar Content */}
                               {view === 'month' ? (
-                                        <div className="grid grid-cols-7 gap-px bg-gray-200 mt-20">
+                                        <div className="grid grid-cols-7 gap-px bg-gray-200 mt-10">
                                                   {/* Day headers */}
                                                   {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                                                             <div key={day} className="bg-white p-2 text-center text-sm text-gray-600">
@@ -292,19 +408,44 @@ const WeeklyPlanner = () => {
                                                   ))}
 
                                                   {/* Date grid */}
-                                                  {days.map((day, index) => (
-                                                            <div
-                                                                      key={index}
-                                                                      className={`bg-white p-2 h-32 ${!day.isCurrentMonth ? 'text-gray-400' : ''
-                                                                                }`}
-                                                            >
-                                                                      <div className={`text-right ${day.isToday ?
-                                                                                'w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center ml-auto' : ''
-                                                                                }`}>
-                                                                                {day.date}
+                                                  {days.map((day, index) => {
+                                                            // Get events for this day (without hour parameter for month view)
+                                                            const dayEvents = events.filter(event =>
+                                                                      isSameDay(new Date(event.start), new Date(day.fullDate))
+                                                            );
+
+                                                            return (
+                                                                      <div
+                                                                                key={index}
+                                                                                className={`bg-white p-2 h-32 cursor-pointer relative ${!day.isCurrentMonth ? 'text-gray-400' : ''
+                                                                                          }`}
+                                                                                onClick={() => handleTimeSlotClick(day.fullDate, '9 AM')}
+                                                                      >
+                                                                                <div className={`text-right mb-2 ${day.isToday ?
+                                                                                          'w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center ml-auto' : ''
+                                                                                          }`}>
+                                                                                          {day.date}
+                                                                                </div>
+                                                                                <div className="overflow-y-auto max-h-24">
+                                                                                          {dayEvents.map(event => (
+                                                                                                    <div
+                                                                                                              key={event.id}
+                                                                                                              className={`${event.color} rounded p-1 mb-1 text-white text-sm`}
+                                                                                                    >
+                                                                                                              <div className="font-semibold truncate">{event.title}</div>
+                                                                                                              <div className="text-xs">
+                                                                                                                        {event.start.toLocaleTimeString('en-US', {
+                                                                                                                                  hour: 'numeric',
+                                                                                                                                  minute: '2-digit',
+                                                                                                                                  hour12: true
+                                                                                                                        })}
+                                                                                                              </div>
+                                                                                                    </div>
+                                                                                          ))}
+                                                                                </div>
                                                                       </div>
-                                                            </div>
-                                                  ))}
+                                                            );
+                                                  })}
                                         </div>
                               ) : (
                                         renderTimeGrid()
