@@ -1,9 +1,10 @@
-import Cal from "./Cal"
+
+import Calendar from "./Calendar/Calendar"
 
 function App(){
   return (
-    <div className="mx-auto p-4">
-     <Cal />
+    <div className="">
+    <Calendar />
     </div>
   )
 }

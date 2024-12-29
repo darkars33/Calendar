@@ -1,0 +1,68 @@
+/* CalendarComponent.css */
+/* .rbc-month-view {
+  border: 1px solid #e2e8f0; 
+} */
+
+.rbc-month-row {
+  height: 100px; /* Increase the height of each row */
+}
+
+.rbc-calendar{
+          width: 95%;
+          padding: 0;
+         
+}
+.rbc-month-view{
+          border: none;
+          padding: 1rem;
+}
+
+
+.rbc-header{
+          border: none;
+          padding: 0;
+}
+.rbc-row-content{
+          border: none;
+}
+.rbc-time-view{
+          border: none;
+}
+/* .rbc-time-content{
+          overflow: scroll; 
+          scrollbar-width: none;
+          -ms-overflow-style: none; 
+} */
+
+.rbc-time-header-content{
+          border: none;
+}
+
+.rbc-agenda-view{
+          border: 1px solid #e2e8f0;
+          padding: 1rem;
+}
+.rbc-button-link{
+          font-weight: 400;
+}
+
+.rbc-label{
+          font-weight: 100;
+}
+
+.rbc-events-container{
+          border: none;
+         
+}
+
+.rbc-events-container{
+         
+}
+.rbc-time-slot{
+          margin: 0;
+}
+
+
+.rbc-toolbar{
+          display: none;
+}
