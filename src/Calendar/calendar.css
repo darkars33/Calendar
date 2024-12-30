@@ -1,68 +1,145 @@
 /* CalendarComponent.css */
-/* .rbc-month-view {
-  border: 1px solid #e2e8f0; 
-} */
-
 .rbc-month-row {
   height: 100px; /* Increase the height of each row */
 }
 
-.rbc-calendar{
-          width: 95%;
-          padding: 0;
-         
-}
-.rbc-month-view{
-          border: none;
-          padding: 1rem;
+.rbc-calendar {
+  width: 95%;
+  padding: 0;
 }
 
+.rbc-month-view {
+  border: none;
+  padding: 1rem;
+}
 
-.rbc-header{
-          border: none;
-          padding: 0;
+.rbc-header {
+  border: none;
+  padding: 0;
 }
-.rbc-row-content{
-          border: none;
+
+/* Only hide row content in non-month views */
+.rbc-time-view .rbc-row-content,
+.rbc-agenda-view .rbc-row-content {
+  border: none;
+  display: none;
 }
-.rbc-time-view{
-          border: none;
+
+/* Show row content in month view */
+.rbc-month-view .rbc-row-content {
+  border: none;
+  display: block; /* or flex depending on your layout needs */
 }
-/* .rbc-time-content{
-          overflow: scroll; 
-          scrollbar-width: none;
-          -ms-overflow-style: none; 
+
+.rbc-time-view {
+  border: none;
+}
+
+.rbc-time-header-content {
+  border: none;
+}
+
+.rbc-agenda-view {
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+}
+
+.rbc-button-link {
+  font-weight: 400;
+}
+
+.rbc-label {
+  font-weight: 100;
+}
+
+.rbc-events-container {
+  border: none;
+}
+
+.rbc-time-slot {
+  margin: 0;
+}
+
+.rbc-toolbar {
+  display: none;
+}
+
+.rbc-event {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.rbc-row-segment {
+  padding: 0 1px !important;
+}
+
+.rbc-date-cell {
+  padding-bottom: 40px !important;
+}
+
+.rbc-date-cell > a {
+  margin-bottom: 4px;
+}
+
+.rbc-event{
+  color: black;
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Add to your calendar.css */
+.rbc-timeslot-group {
+  min-height: 40px !important; /* Adjust height of time slots */
+}
+
+.rbc-time-slot {
+  min-height: 20px !important; /* Height of each half-hour slot */
+}
+
+.rbc-time-header-content {
+  font-size: 19px;
+}
+
+.rbc-label {
+  padding: 4px !important;
+}
+
+/* For better visibility of half-hour marks */
+.rbc-time-slot:nth-child(even) {
+  border-top: 1px dotted #ddd;
+}
+
+/* Add to your calendar.css */
+/* .rbc-time-content {
+  font-size: 12px;
 } */
 
-.rbc-time-header-content{
-          border: none;
+.rbc-timeslot-group {
+  min-height: 40px !important;
 }
 
-.rbc-agenda-view{
-          border: 1px solid #e2e8f0;
-          padding: 1rem;
-}
-.rbc-button-link{
-          font-weight: 400;
+.rbc-time-slot {
+  min-height: 20px !important;
 }
 
-.rbc-label{
-          font-weight: 100;
+.rbc-time-gutter .rbc-timeslot-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
-.rbc-events-container{
-          border: none;
-         
+/* .rbc-label {
+  flex: 0 0 auto;
+ 
+  font-size: 12px;
+} */
+
+/* Style for the time labels */
+.rbc-time-gutter .rbc-timeslot-group .rbc-time-slot {
+  visibility: visible !important;
+  height: 20px !important;
+
 }
 
-.rbc-events-container{
-         
-}
-.rbc-time-slot{
-          margin: 0;
-}
-
-
-.rbc-toolbar{
-          display: none;
-}
+/* Hide the second label in each hour to avoid duplication */

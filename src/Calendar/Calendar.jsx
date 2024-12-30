@@ -166,19 +166,28 @@ export default function CalendarComponent() {
           };
 
           const eventPropGetter = (event) => ({
-                    onClick: (e) => handleEventSelect(event),
-                    className: "relative transition-transform transform ", // Hover effect
-                    ...eventStyleGetter(event), // Apply event styles
-          });
+                    className: "transition-transform transform", 
+                    style: {
+                      backgroundColor: typeColors[event.type] || "#gray-400",
+                      border: "none",
+                      borderRadius: "4px",
+                      color: "white",
+                      fontSize: "18px",
+                      height: "auto",
+                      width: "100%",
+                      padding: "100px",
+                      marginBottom: "100px",
+                      maxHeight: view === 'month' ? '40px' : 'auto'
+                    }
+                  });
 
-          const month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
           const displayedDate = moment(date);
           const current = `${displayedDate.format('MMMM')} ${displayedDate.format('YYYY')}`;
 
           return (
                     <div className="flex flex-col items-center">
-                              {/*  */}
+
 
                               <div className="w-full p-3 pb-0 mt-5 flex justify-center">
                                         <div className="w-[95%] p-3 flex justify-between items-center">
@@ -264,12 +273,18 @@ export default function CalendarComponent() {
                                         endAccessor="end"
                                         selectable
                                         onSelectSlot={handleSelect}
+                                        step={30} // This sets 30-minute intervals
+                                        timeslots={2}
+                                        formats={{
+                                                  timeGutterFormat: (date, culture, localizer) => 
+                                                    localizer.format(date, 'h:mm A', culture)
+                                                }}
                                         style={{
-                                                  height: 650,
+                                                  height: 700,
                                                   borderRadius: "0.5rem",
                                                   backgroundColor: "white",
-                                                  padding: "0.5rem"
-
+                                                  padding: "0.5rem",
+                                                  cursor: "pointer"
                                         }}
                                         date={date}
                                         onNavigate={setDate}
@@ -284,31 +299,69 @@ export default function CalendarComponent() {
                                                   work_week: true,
                                                   three_day: true
                                         }}
+                                        min={moment().startOf('day').toDate()} // Start time of the calendar
+                                        max={moment().endOf('day').toDate()} 
                                         components={{
-                                                  event: ({ event }) => (
-                                                            <div className="flex justify-between items-center p-1 text-white rounded-md shadow-md">
-                                                                      <span>{event.title}</span>
-                                                                      <div className="flex items-center">
-                                                                                <FaEdit
-                                                                                          onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    handleEventSelect(event);
-                                                                                          }}
-                                                                                          className="ml-2 cursor-pointer "
-                                                                                          size={10}
-                                                                                />
-                                                                                <FaTrash
-                                                                                          onClick={(e) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    handleDeleteEvent(event);
-                                                                                          }}
-                                                                                          className="ml-2 cursor-pointer"
-                                                                                          size={10}
-                                                                                />
-                                                                      </div>
-                                                            </div>
-                                                  ),
-                                        }}
+                                                  event: ({ event }) => {
+                                                    // Get all events for the same time slot
+                                                    const sameTimeEvents = filteredEvents.filter(e => 
+                                                      moment(e.start).format('YYYY-MM-DD HH:mm') === moment(event.start).format('YYYY-MM-DD HH:mm')
+                                                    );
+                                                    const eventIndex = sameTimeEvents.findIndex(e => e === event);
+                                                    
+                                                    // Return null if it's beyond the first two events
+                                                    if (eventIndex >= 2) return null;
+                                                
+                                                    return (
+                                                      <div className="w-full h-full flex flex-col justify-between p-1" 
+                                                           onClick={() => handleEventSelect(event)}
+                                                           style={{ backgroundColor: typeColors[event.type] }}>
+                                                        <div className="flex justify-between items-center">
+                                                          <span className="text-xs truncate">{event.title}</span>
+                                                          <div className="flex items-center gap-1">
+                                                            <FaEdit
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEventSelect(event);
+                                                              }}
+                                                              className="cursor-pointer hover:opacity-80"
+                                                              size={10}
+                                                            />
+                                                            <FaTrash
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteEvent(event);
+                                                              }}
+                                                              className="cursor-pointer hover:opacity-80"
+                                                              size={10}
+                                                            />
+                                                          </div>
+                                                        </div>
+                                                        <div className="text-[10px] opacity-80">
+                                                          {moment(event.start).format('h:mm A')}
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  },
+                                                
+                                                  // Custom component to show "+X more" indicator
+                                                  slotGrouper: ({ group, slots, resources }) => {
+                                                    const sameTimeEvents = filteredEvents.filter(event => 
+                                                      slots.some(slot => 
+                                                        moment(event.start).format('YYYY-MM-DD HH:mm') === moment(slot).format('YYYY-MM-DD HH:mm')
+                                                      )
+                                                    );
+                                                
+                                                    if (sameTimeEvents.length > 2) {
+                                                      return (
+                                                        <div className="absolute right-0 top-0 text-xs text-blue-600 font-medium p-1">
+                                                          +{sameTimeEvents.length - 2} more
+                                                        </div>
+                                                      );
+                                                    }
+                                                    return null;
+                                                  }
+                                                }}
                               />
 
                               {modalOpen && (
@@ -323,11 +376,40 @@ export default function CalendarComponent() {
                                                                       value={eventTitle}
                                                                       onChange={(e) => setEventTitle(e.target.value)}
                                                                       className="border border-gray-300 p-2 mb-2 w-full rounded"
+                                                                      required
                                                             />
+
+                                                            <div className="mb-2">
+                                                                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                                                Start Date & Time
+                                                                      </label>
+                                                                      <input
+                                                                                type="datetime-local"
+                                                                                value={moment(eventStart).format('YYYY-MM-DDTHH:mm')}
+                                                                                onChange={(e) => setEventStart(new Date(e.target.value))}
+                                                                                className="border border-gray-300 p-2 w-full rounded cursor-pointer"
+                                                                                required
+                                                                      />
+                                                            </div>
+
+                                                            {/* End Date and Time */}
+                                                            <div className="mb-2">
+                                                                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                                                End Date & Time
+                                                                      </label>
+                                                                      <input
+                                                                                type="datetime-local"
+                                                                                value={moment(eventEnd).format('YYYY-MM-DDTHH:mm')}
+                                                                                onChange={(e) => setEventEnd(new Date(e.target.value))}
+                                                                                className="border border-gray-300 p-2 w-full rounded cursor-pointer"
+                                                                                required
+                                                                      />
+                                                            </div>
+
                                                             <select
                                                                       value={eventType}
                                                                       onChange={(e) => setEventType(e.target.value)}
-                                                                      className="border border-gray-300 p-2 mb-2 w-full rounded"
+                                                                      className="border border-gray-300 p-2 mb-2 w-full rounded cursor-pointer"
                                                             >
                                                                       <option value="">Select Meeting Type</option>
                                                                       {meetingTypes.map((type) => (
